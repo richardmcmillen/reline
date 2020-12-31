@@ -5,6 +5,7 @@ begin
 
   class Reline::TestRendering < Yamatanooroti::TestCase
     def setup
+      GC.disable if ENV['SCHEDULE_GC'] || ENV['DISABLE_GC'] # Disable GC to have reliable behaviour.
       @pwd = Dir.pwd
       suffix = '%010d' % Random.rand(0..65535)
       @tmpdir = File.join(File.expand_path(Dir.tmpdir), "test_reline_config_#{$$}_#{suffix}")
@@ -32,6 +33,7 @@ begin
       write(":a\n")
       write("\C-p")
       close
+      GC.start if ENV['SCHEDULE_GC']
       assert_screen(<<~EOC)
         Multiline REPL.
         prompt> :a
@@ -50,6 +52,7 @@ begin
         => :ab
         prompt>
       EOC
+      GC.start if ENV['SCHEDULE_GC']
     end
 
     def test_autowrap
